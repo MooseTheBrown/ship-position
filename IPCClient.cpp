@@ -94,6 +94,7 @@ void IPCClient::stop()
 
 std::string IPCClient::handleRequest(const std::string &rq)
 {
+    _log->write(LogLevel::DEBUG, "IPCClient %d handling request %s\n", _id, rq.c_str());
     try
     {
         json json_rq = json::parse(rq);
@@ -105,7 +106,9 @@ std::string IPCClient::handleRequest(const std::string &rq)
             _gpsReader.getGPSInfo(gpsInfo);
             GPSInfoResponse resp(gpsInfo);
             json json_resp = resp;
-            return json_resp.dump();
+            std::string respStr = json_resp.dump();
+            _log->write(LogLevel::DEBUG, "IPCClient %d sending response %s\n", _id, respStr.c_str());
+            return respStr;
         }
         else
         {

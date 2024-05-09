@@ -115,6 +115,7 @@ TEST_F(UnixListenerTest, GetGPSData)
     _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetGPSData\n");
 
     char buf[4096];
+    std::memset(reinterpret_cast<void *>(buf), 0, sizeof(buf));
 
     int sockfd = connectClient();
     if (sockfd == -1)
