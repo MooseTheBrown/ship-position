@@ -23,7 +23,7 @@
 namespace ship_position
 {
 
-void NMEAParser::parse(std::string data, GPSInfo &gpsInfo)
+void NMEAParser::parse(const std::string &data, GPSInfo &gpsInfo)
 {
     std::vector<std::string> lines;
     split(data, "\n", lines);

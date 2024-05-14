@@ -32,12 +32,18 @@ namespace ship_position
 
 BN880GPSReader::BN880GPSReader(const BN880GPSConfig &config) :
     _readErrors(0),
-    _config(config)
+    _config(config),
+    _fd(-1),
+    _rawfd(-1)
 {
     _log = Log::getInstance();
     _log->write(LogLevel::DEBUG, "BN880GPSReader ctor\n");
     _readbuf = new char[config.bufferSize];
     init(config.devPath);
+    if (config.rawOutput != "")
+    {
+        setupRawOutput(config.rawOutput);
+    }
 }
 
 BN880GPSReader::~BN880GPSReader()
@@ -47,6 +53,11 @@ BN880GPSReader::~BN880GPSReader()
         close(_fd);
     }
     delete _readbuf;
+
+    if (_rawfd!= -1)
+    {
+        close(_rawfd);
+    }
 
     Log::release();
 }
@@ -110,6 +121,7 @@ void BN880GPSReader::run()
             std::string nmeaData(_readbuf, numRead);
             std::unique_lock<std::shared_mutex> lock(_gpsInfoMutex);
             nmeaParser.parse(nmeaData, _gpsInfo);
+            writeRawOutput(nmeaData);
         }
     }
 }
@@ -118,6 +130,46 @@ void BN880GPSReader::getGPSInfo(GPSInfo &gpsInfo)
 {
     std::shared_lock<std::shared_mutex> lock(_gpsInfoMutex);
     gpsInfo = _gpsInfo;
+}
+
+void BN880GPSReader::setupRawOutput(const std::string &rawOutputPath)
+{
+    _rawfd = open(rawOutputPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0664);
+    if (_rawfd == -1)
+    {
+        _log->write(LogLevel::ERROR, "failed to open raw output file %s, error=%d\n", rawOutputPath.c_str(), errno);
+    }
+}
+
+void BN880GPSReader::writeRawOutput(const std::string &rawData)
+{
+    if (_rawfd != -1)
+    {
+        // check raw output file size and truncate if necessary
+        if (_config.maxRawFileSize != 0)
+        {
+            struct stat st;
+            if (fstat(_rawfd, &st) == -1)
+            {
+                _log->write(LogLevel::ERROR, "BN880GPSReader failed to stat raw output file, error=%d\n", errno);
+                return;
+            }
+            if (st.st_size > _config.maxRawFileSize)
+            {
+                _log->write(LogLevel::DEBUG, "BN880GPSReader: raw output file size exceeded, truncating\n");
+                if (ftruncate(_rawfd, 0) == -1)
+                {
+                    _log->write(LogLevel::ERROR, "BN880GPSReader failed to truncate raw output file, error=%d\n", errno);
+                    return;
+                }
+            }
+        }
+
+        if (write(_rawfd, rawData.c_str(), rawData.length()) == -1)
+        {
+            _log->write(LogLevel::ERROR, "BN880GPSReader failed to write to raw output file, error=%d\n", errno);
+        }
+    }
 }
 
 }

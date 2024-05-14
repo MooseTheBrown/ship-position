@@ -42,9 +42,12 @@ public:
     virtual void getGPSInfo(GPSInfo &gpsInfo);
 protected:
     void init(const std::string &devPath);
+    void setupRawOutput(const std::string &rawOutputPath);
+    void writeRawOutput(const std::string &rawData);
 
     const BN880GPSConfig &_config;
     int _fd;
+    int _rawfd;
     Log *_log;
     char *_readbuf;
     int _readErrors;

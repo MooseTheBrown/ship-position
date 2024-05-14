@@ -31,7 +31,7 @@ namespace ship_position
 class NMEAParser
 {
 public:
-    void parse(std::string data, GPSInfo &gpsInfo);
+    void parse(const std::string &data, GPSInfo &gpsInfo);
 
 protected:
     void split(const std::string &data, const std::string &delimited, std::vector<std::string> &tokens);

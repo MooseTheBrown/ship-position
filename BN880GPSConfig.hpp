@@ -22,6 +22,7 @@
 #define BN880GPSCONFIG_HPP
 
 #include <string>
+#include <cstdint>
 
 namespace ship_position
 {
@@ -29,9 +30,10 @@ namespace ship_position
 struct BN880GPSConfig
 {
     std::string devPath;
-    int bufferSize;
+    uint64_t bufferSize;
     int maxRetries;
     std::string rawOutput;
+    uint64_t maxRawFileSize;
 };
 
 }
