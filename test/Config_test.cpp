@@ -36,10 +36,15 @@ TEST(Config, ConfigTest)
     ASSERT_EQ(4096, gpsConfig.bufferSize);
     ASSERT_EQ(3, gpsConfig.maxRetries);
     ASSERT_EQ("/var/run/rawgps.log", gpsConfig.rawOutput);
+    ASSERT_EQ(1073741824, gpsConfig.maxRawFileSize);
 
     sp::IPCConfig ipcConfig;
     config.getIPCConfig(ipcConfig);
 
     ASSERT_EQ(5120, ipcConfig.bufSize);
     ASSERT_EQ("/tmp/ship_position.sock", ipcConfig.socketPath);
+
+    ASSERT_EQ(sp::LogLevel::DEBUG, config.getLogLevel());
+    ASSERT_TRUE(config.isConsoleLogEnabled());
+    ASSERT_TRUE(config.isSyslogEnabled());
 }

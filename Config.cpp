@@ -45,4 +45,42 @@ Config::Config(const std::string &configFile)
     _ok = true;
 }
 
+LogLevel Config::getLogLevel() const
+{
+    if (_configData.logLevel == "debug")
+    {
+        return LogLevel::DEBUG;
+    }
+    else if (_configData.logLevel == "notice")
+    {
+        return LogLevel::NOTICE;
+    }
+    else 
+    {
+        return LogLevel::ERROR;
+    }
+}
+
+bool Config::isConsoleLogEnabled() const
+{
+    for (auto &backend : _configData.logBackends)
+    {
+        if (backend == "console")
+        {
+            return true;
+        }
+    }
+}
+
+bool Config::isSyslogEnabled() const
+{
+    for (auto &backend : _configData.logBackends)
+    {
+        if (backend == "syslog")
+        {
+            return true;
+        }
+    }
+}
+
 }

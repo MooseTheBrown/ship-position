@@ -31,7 +31,7 @@ using json = nlohmann::json;
 namespace ship_position
 {
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BN880GPSConfig, bufferSize, devPath, maxRetries, rawOutput)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BN880GPSConfig, bufferSize, devPath, maxRetries, rawOutput, maxRawFileSize)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(IPCConfig, bufSize, socketPath)
 
 class Config
@@ -41,6 +41,9 @@ public:
 
     void getBN880GPSConfig(BN880GPSConfig &config) const { config = _configData.bn880GPSConfig; }
     void getIPCConfig(IPCConfig &config) const { config = _configData.ipcConfig;}
+    LogLevel getLogLevel() const;
+    bool isSyslogEnabled() const;
+    bool isConsoleLogEnabled() const;
     bool isOk() const { return _ok; }
 
 protected:
@@ -48,7 +51,9 @@ protected:
     {
         BN880GPSConfig bn880GPSConfig;
         IPCConfig ipcConfig;
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigData, bn880GPSConfig, ipcConfig)
+        std::string logLevel;
+        std::vector<std::string> logBackends;
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigData, bn880GPSConfig, ipcConfig, logLevel, logBackends)
     };
 
     ConfigData _configData;
