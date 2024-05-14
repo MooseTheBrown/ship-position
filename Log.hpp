@@ -45,12 +45,6 @@ enum class LogLevel : unsigned char
     DEBUG = 0
 };
 
-enum class LogBackendType : unsigned char
-{
-    CONSOLE = 0,
-    SYSLOG = 1
-};
-
 // log interface
 class Log
 {
@@ -118,6 +112,7 @@ public:
     }
 
     void set_level(LogLevel level) { _level = level; }
+    LogLevel get_level() const { return _level; }
 
 private:
     Log() : _level(LogLevel::NOTICE) {}

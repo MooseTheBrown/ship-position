@@ -18,23 +18,21 @@
  *
  */
 
-#include "Log.hpp"
-#include <gtest/gtest.h>
+#include "ShipPosition.hpp"
 
 namespace sp = ship_position;
 
+static sp::ShipPosition *app = nullptr;
+
 int main(int argc, char *argv[])
 {
-    sp::ConsoleLog clog;
-    sp::Log *log = sp::Log::getInstance();
-    log->set_level(sp::LogLevel::DEBUG);
-    log->add_backend(&clog);
-
-    // run the tests
-    ::testing::InitGoogleTest(&argc, argv);
-    int ret = RUN_ALL_TESTS();
-
-    sp::Log::release();
+    app = new sp::ShipPosition();
+    int ret = app->run(argc, argv);
+    delete app;
+    return ret;
 }
 
-void signal_handler(int signum) {}
+void signal_handler(int sig)
+{
+    app->stop();
+}

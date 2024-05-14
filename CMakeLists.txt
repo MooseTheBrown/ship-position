@@ -36,9 +36,18 @@ set (SHIPPOSITION_SRC BN880GPSReader.cpp
                       NMEAParser.cpp
                       Log.cpp
                       SingleThread.cpp
-                      UnixListener.cpp)
+                      UnixListener.cpp
+                      ShipPosition.cpp)
 
 include_directories (${ship-position_SOURCE_DIR})
+
+find_library (BOOST_PO_LIB NAMES boost_program_options)
+if (${BOOST_PO_LIB} EQUAL "BOOST_PO_LIB-NOTFOUND")
+    message(FATAL_ERROR "boost_program_options not found")
+endif (${BOOST_PO_LIB} EQUAL "BOOST_PO_LIB-NOTFOUND")
+
+add_executable (ship-position ${SHIPPOSITION_SRC} main.cpp)
+target_link_libraries (ship-position ${BOOST_PO_LIB})
 
 if (BUILD_TESTS)
     set (TESTS_SRC ${SHIPPOSITION_SRC}
@@ -52,5 +61,5 @@ if (BUILD_TESTS)
     endif (${GTEST_LIB} EQUAL "GTEST_LIB-NOTFOUND")
     configure_file(test/testconfig.conf testconfig.conf COPYONLY)
     add_executable (ship-position-test ${TESTS_SRC})
-    target_link_libraries (ship-position-test ${GTEST_LIB})
+    target_link_libraries (ship-position-test ${GTEST_LIB} ${BOOST_PO_LIB})
 endif (BUILD_TESTS)
