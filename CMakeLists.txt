@@ -49,6 +49,9 @@ endif (${BOOST_PO_LIB} EQUAL "BOOST_PO_LIB-NOTFOUND")
 add_executable (ship-position ${SHIPPOSITION_SRC} main.cpp)
 target_link_libraries (ship-position ${BOOST_PO_LIB})
 
+install (TARGETS ship-position DESTINATION bin)
+install (FILES ship-position.conf DESTINATION /etc)
+
 if (BUILD_TESTS)
     set (TESTS_SRC ${SHIPPOSITION_SRC}
                    test/main.cpp
