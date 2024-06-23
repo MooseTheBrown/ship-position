@@ -63,24 +63,28 @@ LogLevel Config::getLogLevel() const
 
 bool Config::isConsoleLogEnabled() const
 {
-    for (auto &backend : _configData.logBackends)
+    for (auto backend : _configData.logBackends)
     {
         if (backend == "console")
         {
             return true;
         }
     }
+
+    return false;
 }
 
 bool Config::isSyslogEnabled() const
 {
-    for (auto &backend : _configData.logBackends)
+    for (auto backend : _configData.logBackends)
     {
         if (backend == "syslog")
         {
             return true;
         }
     }
+
+    return false;
 }
 
 }
