@@ -55,9 +55,18 @@ void NMEAParser::parseGGA(const std::vector<std::string> &fields, GPSInfo &gpsIn
         return;
     }
 
-    gpsInfo.latitude = parseCoordinates(fields[2], fields[3]);
-    gpsInfo.longitude = parseCoordinates(fields[4], fields[5]);
-    gpsInfo.numSatellites = std::stoi(fields[7]);
+    if (!fields[2].empty() && !fields[3].empty())
+    {
+        gpsInfo.latitude = parseCoordinates(fields[2], fields[3]);
+    }
+    if (!fields[4].empty() && !fields[5].empty())
+    {
+        gpsInfo.longitude = parseCoordinates(fields[4], fields[5]);
+    }
+    if (!fields[7].empty())
+    {
+        gpsInfo.numSatellites = std::stoi(fields[7]);
+    }
 }
 
 void NMEAParser::parseVTG(const std::vector<std::string> &fields, GPSInfo &gpsInfo)
@@ -67,8 +76,14 @@ void NMEAParser::parseVTG(const std::vector<std::string> &fields, GPSInfo &gpsIn
         return;
     }
 
-    gpsInfo.speedKnots = std::stod(fields[5]);
-    gpsInfo.speedKm = std::stod(fields[7]);
+    if (!fields[5].empty())
+    {
+        gpsInfo.speedKnots = std::stod(fields[5]);
+    }
+    if (!fields[7].empty())
+    {
+        gpsInfo.speedKm = std::stod(fields[7]);
+    }
 }
 
 void NMEAParser::split(const std::string &data, const std::string &delimiter, std::vector<std::string> &tokens)
