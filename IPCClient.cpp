@@ -68,7 +68,7 @@ void IPCClient::run()
         }
         if (len == 0)
         {
-            _log->write(LogLevel::ERROR, "IPCClient %d failed to read data from socket, socket closed\n", _id);
+            _log->write(LogLevel::NOTICE, "IPCClient %d failed to read data from socket, socket closed\n", _id);
             break;
         }
         _buf[len] = '\0';

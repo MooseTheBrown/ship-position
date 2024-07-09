@@ -64,7 +64,7 @@ void UnixListener::run()
         int clientsock = accept(_fd, nullptr, nullptr);
         if (clientsock == -1)
         {
-            _log->write(LogLevel::ERROR, "UnixListener failed to accept connection, error code %d", errno);
+            _log->write(LogLevel::NOTICE, "UnixListener failed to accept connection, error code %d\n", errno);
             continue;
         }
 
@@ -130,9 +130,11 @@ void UnixListener::teardown()
         client->stop();
     }
 
+    cleanStoppedClients();
+
     if (_fd != -1)
     {
-        close(_fd);
+        shutdown(_fd, SHUT_RDWR);
         _fd = -1;
         unlink(_config.socketPath.c_str());
     }

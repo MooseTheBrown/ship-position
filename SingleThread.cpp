@@ -58,8 +58,7 @@ void SingleThread::cleanup()
     {
         if (_thread->joinable())
         {
-            // the thread is about to stop, so detach and destroy the thread object
-            _thread->detach();
+            _thread->join();
         }
         delete _thread;
         _thread = nullptr;
