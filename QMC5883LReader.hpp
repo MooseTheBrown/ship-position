@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -18,29 +18,40 @@
  *
  */
 
-#ifndef HMC5883LREADER_HPP
-#define HMC5883LREADER_HPP
+#ifndef QMC5883LREADER_HPP
+#define QMC5883LREADER_HPP
 
 #include "SingleThread.hpp"
 #include "Log.hpp"
+#include "QMC5883LConfig.hpp"
+#include "MagnetometerReader.hpp"
+
+#include <cstdint>
+#include <shared_mutex>
+
+#define QMC5883L_I2C_ADDR 0x0D
 
 namespace ship_position
 {
 
-class HMC5883LReader : public SingleThread
+class QMC5883LReader : public SingleThread, public MagnetometerReader
 {
 public:
-    HMC5883LReader();
-    virtual ~HMC5883LReader();
+    QMC5883LReader(const QMC5883LConfig &config);
+    virtual ~QMC5883LReader();
     virtual void run();
+    virtual void GetMagnetometerData(MagnetometerData &data);
 protected:
     void init();
-    int findDevice(const std::string &adapterName, std::string &deviceName);
+    int32_t readWord2C(uint8_t lowReg, uint8_t highReg, int32_t &res);
 
+    const QMC5883LConfig &_config;
     int _fd;
     Log *_log;
+    MagnetometerData _magnetometerData;
+    std::shared_mutex _magnetometerDataMutex;
 };
 
 }
 
-#endif // HMC5883LREADER_HPP
+#endif // QMC5883LREADER_HPP

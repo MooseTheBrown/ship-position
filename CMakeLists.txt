@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024 Mikhail Sapozhnikov
+# Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
 #
 # This file is part of ship-position.
 #
@@ -23,7 +23,7 @@ project (ship-position)
 
 option (BUILD_TESTS "Build tests" OFF)
 
-set (COMMON_CXX_FLAGS "-std=c++17 -pthread")
+set (COMMON_CXX_FLAGS "-std=c++23 -pthread")
 set (TEST_CXX_FLAGS "")
 set (CMAKE_BUILD_TYPE RelWithDebInfo)
 set (CMAKE_LINKER_FLAGS -ldl)
@@ -37,7 +37,8 @@ set (SHIPPOSITION_SRC BN880GPSReader.cpp
                       Log.cpp
                       SingleThread.cpp
                       UnixListener.cpp
-                      ShipPosition.cpp)
+                      ShipPosition.cpp
+                      QMC5883LReader.cpp)
 
 include_directories (${ship-position_SOURCE_DIR})
 
@@ -46,8 +47,13 @@ if (${BOOST_PO_LIB} EQUAL "BOOST_PO_LIB-NOTFOUND")
     message(FATAL_ERROR "boost_program_options not found")
 endif (${BOOST_PO_LIB} EQUAL "BOOST_PO_LIB-NOTFOUND")
 
+find_library (I2C_LIB NAMES i2c)
+if (${I2C_LIB} EQUAL "I2C_LIB-NOTFOUND")
+    message(FATAL_ERROR "i2c not found")
+endif (${I2C_LIB} EQUAL "I2C_LIB-NOTFOUND")
+
 add_executable (ship-position ${SHIPPOSITION_SRC} main.cpp)
-target_link_libraries (ship-position ${BOOST_PO_LIB})
+target_link_libraries (ship-position ${BOOST_PO_LIB} ${I2C_LIB})
 
 install (TARGETS ship-position DESTINATION bin)
 install (FILES ship-position.conf DESTINATION /etc)

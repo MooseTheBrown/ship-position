@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -28,10 +28,11 @@
 namespace ship_position
 {
 
-UnixListener::UnixListener(const IPCConfig &config, GPSReader &gpsReader)
+UnixListener::UnixListener(const IPCConfig &config, GPSReader &gpsReader, MagnetometerReader &magnetometerReader)
 : _config(config),
   _fd(-1),
   _gpsReader(gpsReader),
+  _magnetometerReader(magnetometerReader),
   _nextClientId(1)
 {
     _log = Log::getInstance();
@@ -69,7 +70,7 @@ void UnixListener::run()
         }
 
         IPCClient *client = new IPCClient(_nextClientId++, clientsock, _config, _gpsReader,
-            methodWrapper<UnixListener, void, int>(this, &UnixListener::onClientStopped));
+            _magnetometerReader, methodWrapper<UnixListener, void, int>(this, &UnixListener::onClientStopped));
         _clients.push_back(client);
         client->start();
     }

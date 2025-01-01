@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -18,36 +18,29 @@
  *
  */
 
-#include "HMC5883LReader.hpp"
+#ifndef MAGNETOMETER_READER_HPP
+#define MAGNETOMETER_READER_HPP
+
+#include <cstdint>
 
 namespace ship_position
 {
 
-HMC5883LReader::HMC5883LReader()
+struct MagnetometerData
 {
-    _log = Log::getInstance();
-}
+    int32_t x;
+    int32_t y;
+    int32_t z;
 
-HMC5883LReader::~HMC5883LReader()
-{
-    Log::release();
-}
+    MagnetometerData() : x(0), y(0), z(0) {}
+};
 
-void HMC5883LReader::init()
+class MagnetometerReader
 {
-    std::string deviceName;
-    // TODO: insert proper adapter name
-    if (findDevice("hmc5883l", deviceName) != 0)
-    {
-        _log->write(LogLevel::ERROR, "Failed to find HMC5883L i2c device\n");
-        return;
-    }
-}
-
-int HMC5883LReader::findDevice(const std::string &adapterName, std::string &deviceName)
-{
-    // TODO: scan /sys/class/i2c-adapter to find adapter with given name
-    return 0;
-}
+public:
+    virtual void GetMagnetometerData(MagnetometerData &data) = 0;
+};
 
 }
+
+#endif // MAGNETOMETER_READER_HPP

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -22,6 +22,7 @@
 #define IPCMESSAGES_HPP
 
 #include "GPSReader.hpp"
+#include "MagnetometerReader.hpp"
 #include "json.hpp"
 #include <string>
 
@@ -31,6 +32,7 @@ namespace ship_position
 struct IPCRequest
 {
     const std::string cmdGetGPS = "GetGPSData";
+    const std::string cmdGetMagnetometer = "GetMagnetometerData";
 
     std::string cmd;
 
@@ -59,6 +61,23 @@ struct GPSInfoResponse
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(GPSInfoResponse, numSatellites, latitude, longitude, speedKnots, speedKm)
 };
 
+struct MagnetometerInfoResponse
+{
+    int32_t x;
+    int32_t y;
+    int32_t z;
+
+    MagnetometerInfoResponse() = default;
+
+    MagnetometerInfoResponse(const MagnetometerData &data)
+    {
+        x = data.x;
+        y = data.y;
+        z = data.z;
+    }
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MagnetometerInfoResponse, x, y, z)
+};
 
 struct ErrorResponse
 {
@@ -66,7 +85,6 @@ struct ErrorResponse
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(ErrorResponse, errorMessage)
 };
-
 
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -26,6 +26,7 @@
 #include "IPCConfig.hpp"
 #include "IPCClient.hpp"
 #include "GPSReader.hpp"
+#include "MagnetometerReader.hpp"
 #include "MethodWrapper.hpp"
 #include <list>
 #include <mutex>
@@ -36,7 +37,7 @@ namespace ship_position
 class UnixListener : public SingleThread
 {
 public:
-    UnixListener(const IPCConfig &config, GPSReader &gpsReader);
+    UnixListener(const IPCConfig &config, GPSReader &gpsReader, MagnetometerReader &magnetometerReader);
     virtual ~UnixListener();
 
     virtual void run();
@@ -57,6 +58,7 @@ protected:
     std::mutex _stoppedClientsMutex;
     std::vector<int> _stoppedClients;
     GPSReader &_gpsReader;
+    MagnetometerReader &_magnetometerReader;
 };
 
 }

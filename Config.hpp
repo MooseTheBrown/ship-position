@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -23,6 +23,7 @@
 
 #include "BN880GPSConfig.hpp"
 #include "IPCConfig.hpp"
+#include "QMC5883LConfig.hpp"
 #include "Log.hpp"
 #include "json.hpp"
 
@@ -32,6 +33,7 @@ namespace ship_position
 {
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BN880GPSConfig, bufferSize, devPath, maxRetries, rawOutput, maxRawFileSize)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QMC5883LConfig, devPath, pollTimeout)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(IPCConfig, bufSize, socketPath)
 
 class Config
@@ -40,6 +42,7 @@ public:
     Config(const std::string &configFile);
 
     void getBN880GPSConfig(BN880GPSConfig &config) const { config = _configData.bn880GPSConfig; }
+    void getQMC5883LConfig(QMC5883LConfig &config) const { config = _configData.qmc5883LConfig; }
     void getIPCConfig(IPCConfig &config) const { config = _configData.ipcConfig;}
     LogLevel getLogLevel() const;
     bool isSyslogEnabled() const;
@@ -50,10 +53,11 @@ protected:
     struct ConfigData
     {
         BN880GPSConfig bn880GPSConfig;
+        QMC5883LConfig qmc5883LConfig;
         IPCConfig ipcConfig;
         std::string logLevel;
         std::vector<std::string> logBackends;
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigData, bn880GPSConfig, ipcConfig, logLevel, logBackends)
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigData, bn880GPSConfig, qmc5883LConfig, ipcConfig, logLevel, logBackends)
     };
 
     ConfigData _configData;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -37,6 +37,7 @@ _consoleLog(nullptr),
 _config(nullptr),
 _stopRequested(false),
 _bn880gpsReader(nullptr),
+_qmc5883lReader(nullptr),
 _unixListener(nullptr)
 {
     _log = Log::getInstance();
@@ -50,6 +51,7 @@ ShipPosition::~ShipPosition()
     delete _consoleLog;
     delete _config;
     delete _bn880gpsReader;
+    delete _qmc5883lReader;
     delete _unixListener;
 }
 
@@ -72,6 +74,7 @@ int ShipPosition::run(int argc, char **argv)
     }
 
     _bn880gpsReader->start();
+    _qmc5883lReader->start();
     _unixListener->start();
 
     while (true)
@@ -126,11 +129,14 @@ int ShipPosition::init(int argc, char **argv)
     _log->set_level(_config->getLogLevel());
 
     _config->getBN880GPSConfig(_bn880gpsConfig);
+    _config->getQMC5883LConfig(_qmc5883lConfig);
     _config->getIPCConfig(_ipcConfig);
 
     _bn880gpsReader = new BN880GPSReader(_bn880gpsConfig);
 
-    _unixListener = new UnixListener(_ipcConfig, *_bn880gpsReader);
+    _qmc5883lReader = new QMC5883LReader(_qmc5883lConfig);
+
+    _unixListener = new UnixListener(_ipcConfig, *_bn880gpsReader, *_qmc5883lReader);
 
     setupSignals();
 
