@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -25,6 +25,7 @@
 #include "Config.hpp"
 #include "BN880GPSReader.hpp"
 #include "UnixListener.hpp"
+#include "QMC5883LReader.hpp"
 #include <string>
 
 namespace ship_position
@@ -58,6 +59,8 @@ protected:
     bool _stopRequested;
     BN880GPSConfig _bn880gpsConfig;
     BN880GPSReader *_bn880gpsReader;
+    QMC5883LConfig _qmc5883lConfig;
+    QMC5883LReader *_qmc5883lReader;
     IPCConfig _ipcConfig;
     UnixListener *_unixListener;
 };

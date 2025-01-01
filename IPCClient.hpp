@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -25,6 +25,7 @@
 #include "SingleThread.hpp"
 #include "IPCConfig.hpp"
 #include "GPSReader.hpp"
+#include "MagnetometerReader.hpp"
 #include <functional>
 
 namespace ship_position
@@ -33,7 +34,8 @@ namespace ship_position
 class IPCClient : public SingleThread
 {
 public:
-    IPCClient(int id, int fd, const IPCConfig &config, GPSReader &gpsReader, std::function<void(int)> stopCb);
+    IPCClient(int id, int fd, const IPCConfig &config, GPSReader &gpsReader,
+        MagnetometerReader &magnetometerReader, std::function<void(int)> stopCb);
     IPCClient(const IPCClient &other) = delete;
     virtual ~IPCClient();
 
@@ -47,6 +49,7 @@ protected:
     int _fd;
     const IPCConfig &_config;
     GPSReader &_gpsReader;
+    MagnetometerReader &_magnetometerReader;
     char *_buf;
     Log *_log;
     std::function<void(int)> _stopCb;

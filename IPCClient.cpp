@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -27,11 +27,13 @@ using json = nlohmann::json;
 namespace ship_position
 {
 
-IPCClient::IPCClient(int id, int fd, const IPCConfig &config, GPSReader &gpsReader, std::function<void(int)> stopCb)
+IPCClient::IPCClient(int id, int fd, const IPCConfig &config, GPSReader &gpsReader,
+    MagnetometerReader &magnetometerReader, std::function<void(int)> stopCb)
 : _id(id),
 _fd(fd),
 _config(config),
 _gpsReader(gpsReader),
+_magnetometerReader(magnetometerReader),
 _stopCb(stopCb)
 {
     _buf = static_cast<char *>(new char[_config.bufSize]);
@@ -105,6 +107,16 @@ std::string IPCClient::handleRequest(const std::string &rq)
             GPSInfo gpsInfo;
             _gpsReader.getGPSInfo(gpsInfo);
             GPSInfoResponse resp(gpsInfo);
+            json json_resp = resp;
+            std::string respStr = json_resp.dump();
+            _log->write(LogLevel::DEBUG, "IPCClient %d sending response %s\n", _id, respStr.c_str());
+            return respStr;
+        }
+        else if (ipcRq.cmd == ipcRq.cmdGetMagnetometer)
+        {
+            MagnetometerData magnetometerData;
+            _magnetometerReader.GetMagnetometerData(magnetometerData);
+            MagnetometerInfoResponse resp(magnetometerData);
             json json_resp = resp;
             std::string respStr = json_resp.dump();
             _log->write(LogLevel::DEBUG, "IPCClient %d sending response %s\n", _id, respStr.c_str());
