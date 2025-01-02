@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -42,6 +42,17 @@ public:
     }
 };
 
+class TestMagnetometerReader : public sp::MagnetometerReader
+{
+public:
+    virtual void GetMagnetometerData(sp::MagnetometerData &magnetometerData)
+    {
+        magnetometerData.x = 777;
+        magnetometerData.y = 98639;
+        magnetometerData.z = -84;
+    }
+};
+
 class UnixListenerTest : public ::testing::Test
 {
 public:
@@ -56,6 +67,7 @@ protected:
     sp::IPCConfig _ipcConfig;
     sp::UnixListener *_unixListener;
     TestGPSReader _gpsReader;
+    TestMagnetometerReader _magnetometerReader;
     sp::Log *_log;
 };
 
@@ -66,7 +78,7 @@ UnixListenerTest::UnixListenerTest()
     _ipcConfig.bufSize = 4096;
     _ipcConfig.socketPath = _socketPath;
 
-    _unixListener = new sp::UnixListener(_ipcConfig, _gpsReader);
+    _unixListener = new sp::UnixListener(_ipcConfig, _gpsReader, _magnetometerReader);
 }
 
 UnixListenerTest::~UnixListenerTest()
@@ -155,6 +167,53 @@ TEST_F(UnixListenerTest, GetGPSData)
     EXPECT_EQ(43.98704, resp.longitude);
     EXPECT_EQ(1.0, resp.speedKnots);
     EXPECT_EQ(1.8, resp.speedKm);
+
+    close(sockfd);
+}
+
+TEST_F(UnixListenerTest, GetMagnetometerData)
+{
+    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetMagnetometerData\n");
+
+    char buf[4096];
+    std::memset(reinterpret_cast<void *>(buf), 0, sizeof(buf));
+
+    int sockfd = connectClient();
+    if (sockfd == -1)
+    {
+        FAIL();
+    }
+
+    sp::IPCRequest rq;
+    rq.cmd = rq.cmdGetMagnetometer;
+    json rqJson = rq;
+    std::string rqStr = rqJson.dump();
+
+    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetMagnetometerData sending request %s\n", rqStr.c_str());
+
+    if (write(sockfd, rqStr.c_str(), rqStr.length()) == -1)
+    {
+        _log->write(sp::LogLevel::ERROR, "UnixListenerTest failed to write to client socket: %d\n", errno);
+        close(sockfd);
+        FAIL();
+    }
+
+    int numRead = read(sockfd, reinterpret_cast<void *>(buf), 4096);
+    if (numRead == -1)
+    {
+        _log->write(sp::LogLevel::ERROR, "UnixListenerTest failed to read from client socket: %d\n", errno);
+        close(sockfd);
+        FAIL();
+    }
+
+    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetMagnetometerData received response %s\n", buf);
+
+    json respJson = json::parse(buf);
+    sp::MagnetometerInfoResponse resp = respJson.get<sp::MagnetometerInfoResponse>();
+
+    EXPECT_EQ(777, resp.x);
+    EXPECT_EQ(98639, resp.y);
+    EXPECT_EQ(-84, resp.z);
 
     close(sockfd);
 }

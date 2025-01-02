@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Mikhail Sapozhnikov
+ * Copyright (C) 2024 - 2025 Mikhail Sapozhnikov
  *
  * This file is part of ship-position.
  *
@@ -37,6 +37,12 @@ TEST(Config, ConfigTest)
     ASSERT_EQ(3, gpsConfig.maxRetries);
     ASSERT_EQ("/var/run/rawgps.log", gpsConfig.rawOutput);
     ASSERT_EQ(1073741824, gpsConfig.maxRawFileSize);
+
+    sp::QMC5883LConfig qmcConfig;
+    config.getQMC5883LConfig(qmcConfig);
+
+    ASSERT_EQ("/dev/i2c-99", qmcConfig.devPath);
+    ASSERT_EQ(274, qmcConfig.pollTimeout);
 
     sp::IPCConfig ipcConfig;
     config.getIPCConfig(ipcConfig);
