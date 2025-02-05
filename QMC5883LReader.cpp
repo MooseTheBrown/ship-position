@@ -28,15 +28,24 @@ extern "C"
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 namespace ship_position
 {
 
 QMC5883LReader::QMC5883LReader(const QMC5883LConfig &config) :
 _config(config),
-_fd(-1)
+_fd(-1),
+_calibrating(false)
 {
     _log = Log::getInstance();
+    _calibration.xmin = 0;
+    _calibration.xmax = 0;
+    _calibration.ymin = 0;
+    _calibration.ymax = 0;
+    _calibration.zmax = 0;
+    _calibration.zmin = 0;
+
     init();
 }
 
@@ -96,6 +105,8 @@ void QMC5883LReader::run()
 
     while (true)
     {
+        bool calibrating = _calibrating;
+
         // read status register to check whether data is ready
         __s32 res = i2c_smbus_read_byte_data(_fd, 0x06);
         if (res == -1)
@@ -124,17 +135,54 @@ void QMC5883LReader::run()
                 _log->write(LogLevel::ERROR, "failed to read qmc5883l z axis\n");
             }
 
-            std::unique_lock<std::shared_mutex> lock(_magnetometerDataMutex);
-            _magnetometerData.x = x;
-            _magnetometerData.y = y;
-            _magnetometerData.z = z;
+            if (calibrating)
+            {
+                if ((x < _calibration.xmin) || (_calibration.xmin == 0))
+                {
+                    _calibration.xmin = x;
+                }
+                else if ((x > _calibration.xmax) || (_calibration.xmax == 0))
+                {
+                    _calibration.xmax = x;
+                }
+                if ((y < _calibration.ymin) || (_calibration.xmin == 0))
+                {
+                    _calibration.ymin = y;
+                }
+                else if ((y > _calibration.ymax) || (_calibration.ymax == 0))
+                {
+                    _calibration.ymax = y;
+                }
+                if ((z < _calibration.zmin) || (_calibration.zmin == 0))
+                {
+                    _calibration.zmin = z;
+                }
+                else if ((z > _calibration.zmax) || (_calibration.zmax == 0))
+                {
+                    _calibration.zmax = z;
+                }
+            }
+            else 
+            {
+                std::unique_lock<std::shared_mutex> lock(_magnetometerDataMutex);
+                _magnetometerData.x = x - ((_calibration.xmin + _calibration.xmax) / 2);
+                _magnetometerData.y = y - ((_calibration.ymin + _calibration.ymax) / 2);
+                _magnetometerData.z = z - ((_calibration.zmin + _calibration.zmax) / 2);
+            }
         }
         else
         {
             _log->write(LogLevel::DEBUG, "qmc5883l status register = 0x%02x, skipping measurement\n", res);
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(_config.pollTimeout));
+        if (calibrating)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(_config.calibrationPollTimeout));
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(_config.pollTimeout));
+        }
     }
 }
 
@@ -163,10 +211,24 @@ int QMC5883LReader::readWord2C(uint8_t lowReg, uint8_t highReg, int32_t &res)
     return 0;
 }
 
-void QMC5883LReader::GetMagnetometerData(MagnetometerData &data)
+void QMC5883LReader::getMagnetometerData(MagnetometerData &data)
 {
     std::shared_lock<std::shared_mutex> lock(_magnetometerDataMutex);
     data = _magnetometerData;
+}
+
+void QMC5883LReader::startCalibration()
+{
+    _calibrating = true;
+    _log->write(LogLevel::DEBUG, "qmc5883L calibration started\n");
+}
+
+void QMC5883LReader::stopCalibration()
+{
+    _calibrating = false;
+    _log->write(LogLevel::DEBUG, "qmc5883L calibration stopped\n");
+    _log->write(LogLevel::DEBUG, "qmc5883l calibration data: xmax=%d, xmin=%d, ymax=%d, ymin=%d, zmax=%d, zmin=%d\n",
+        _calibration.xmax, _calibration.xmin, _calibration.ymax, _calibration.ymin, _calibration.zmax, _calibration.zmin);
 }
 
 }

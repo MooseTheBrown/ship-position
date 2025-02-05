@@ -33,7 +33,7 @@ namespace ship_position
 {
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BN880GPSConfig, bufferSize, devPath, maxRetries, rawOutput, maxRawFileSize)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QMC5883LConfig, devPath, pollTimeout)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QMC5883LConfig, devPath, pollTimeout, calibrationPollTimeout)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(IPCConfig, bufSize, socketPath)
 
 class Config

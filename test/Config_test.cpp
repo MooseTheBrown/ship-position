@@ -43,6 +43,7 @@ TEST(Config, ConfigTest)
 
     ASSERT_EQ("/dev/i2c-99", qmcConfig.devPath);
     ASSERT_EQ(274, qmcConfig.pollTimeout);
+    ASSERT_EQ(111, qmcConfig.calibrationPollTimeout);
 
     sp::IPCConfig ipcConfig;
     config.getIPCConfig(ipcConfig);

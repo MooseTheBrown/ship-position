@@ -38,7 +38,9 @@ struct MagnetometerData
 class MagnetometerReader
 {
 public:
-    virtual void GetMagnetometerData(MagnetometerData &data) = 0;
+    virtual void getMagnetometerData(MagnetometerData &data) = 0;
+    virtual void startCalibration() = 0;
+    virtual void stopCalibration() = 0;
 };
 
 }

@@ -33,6 +33,8 @@ struct IPCRequest
 {
     const std::string cmdGetGPS = "GetGPSData";
     const std::string cmdGetMagnetometer = "GetMagnetometerData";
+    const std::string cmdStartCalibration = "StartCalibration";
+    const std::string cmdStopCalibration = "StopCalibration";
 
     std::string cmd;
 
@@ -77,6 +79,13 @@ struct MagnetometerInfoResponse
     }
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(MagnetometerInfoResponse, x, y, z)
+};
+
+struct CalibrationResponse
+{
+    bool success;
+
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CalibrationResponse, success)
 };
 
 struct ErrorResponse

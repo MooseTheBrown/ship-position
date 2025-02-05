@@ -115,12 +115,33 @@ std::string IPCClient::handleRequest(const std::string &rq)
         else if (ipcRq.cmd == ipcRq.cmdGetMagnetometer)
         {
             MagnetometerData magnetometerData;
-            _magnetometerReader.GetMagnetometerData(magnetometerData);
+            _magnetometerReader.getMagnetometerData(magnetometerData);
             MagnetometerInfoResponse resp(magnetometerData);
             json json_resp = resp;
             std::string respStr = json_resp.dump();
             _log->write(LogLevel::DEBUG, "IPCClient %d sending response %s\n", _id, respStr.c_str());
             return respStr;
+        }
+        else if (ipcRq.cmd == ipcRq.cmdStartCalibration)
+        {
+            CalibrationResponse resp;
+            _magnetometerReader.startCalibration();
+            resp.success = true;
+            json json_resp = resp;
+            std::string respStr = json_resp.dump();
+            _log->write(LogLevel::DEBUG, "IPCClient %d sending response %s\n", _id, respStr.c_str());
+            return respStr;
+        }
+        else if (ipcRq.cmd == ipcRq.cmdStopCalibration)
+        {
+            CalibrationResponse resp;
+            _magnetometerReader.stopCalibration();
+            resp.success = true;
+            json json_resp = resp;
+            std::string respStr = json_resp.dump();
+            _log->write(LogLevel::DEBUG, "IPCClient %d sending response %s\n", _id, respStr.c_str());
+            return respStr;
+
         }
         else
         {

@@ -45,12 +45,15 @@ public:
 class TestMagnetometerReader : public sp::MagnetometerReader
 {
 public:
-    virtual void GetMagnetometerData(sp::MagnetometerData &magnetometerData)
+    virtual void getMagnetometerData(sp::MagnetometerData &magnetometerData)
     {
         magnetometerData.x = 777;
         magnetometerData.y = 98639;
         magnetometerData.z = -84;
     }
+
+    virtual void startCalibration() {}
+    virtual void stopCalibration() {}
 };
 
 class UnixListenerTest : public ::testing::Test
@@ -173,7 +176,7 @@ TEST_F(UnixListenerTest, GetGPSData)
 
 TEST_F(UnixListenerTest, GetMagnetometerData)
 {
-    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetMagnetometerData\n");
+    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::getMagnetometerData\n");
 
     char buf[4096];
     std::memset(reinterpret_cast<void *>(buf), 0, sizeof(buf));
@@ -189,7 +192,7 @@ TEST_F(UnixListenerTest, GetMagnetometerData)
     json rqJson = rq;
     std::string rqStr = rqJson.dump();
 
-    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetMagnetometerData sending request %s\n", rqStr.c_str());
+    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::getMagnetometerData sending request %s\n", rqStr.c_str());
 
     if (write(sockfd, rqStr.c_str(), rqStr.length()) == -1)
     {
@@ -206,7 +209,7 @@ TEST_F(UnixListenerTest, GetMagnetometerData)
         FAIL();
     }
 
-    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::GetMagnetometerData received response %s\n", buf);
+    _log->write(sp::LogLevel::DEBUG, "UnixListenerTest::getMagnetometerData received response %s\n", buf);
 
     json respJson = json::parse(buf);
     sp::MagnetometerInfoResponse resp = respJson.get<sp::MagnetometerInfoResponse>();

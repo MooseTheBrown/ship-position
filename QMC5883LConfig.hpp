@@ -32,6 +32,8 @@ struct QMC5883LConfig
     std::string devPath;
     // polling timeout in milliseconds
     int pollTimeout;
+    // calibration polling timeout in milliseconds
+    int calibrationPollTimeout;
 };
 
 }

@@ -34,13 +34,25 @@
 namespace ship_position
 {
 
+struct QMC5883LCalibration
+{
+    int32_t xmin;
+    int32_t xmax;
+    int32_t ymin;
+    int32_t ymax;
+    int32_t zmax;
+    int32_t zmin;
+};
+
 class QMC5883LReader : public SingleThread, public MagnetometerReader
 {
 public:
     QMC5883LReader(const QMC5883LConfig &config);
     virtual ~QMC5883LReader();
     virtual void run();
-    virtual void GetMagnetometerData(MagnetometerData &data);
+    virtual void getMagnetometerData(MagnetometerData &data);
+    virtual void startCalibration();
+    virtual void stopCalibration();
 protected:
     void init();
     int32_t readWord2C(uint8_t lowReg, uint8_t highReg, int32_t &res);
@@ -50,6 +62,8 @@ protected:
     Log *_log;
     MagnetometerData _magnetometerData;
     std::shared_mutex _magnetometerDataMutex;
+    bool _calibrating;
+    QMC5883LCalibration _calibration;
 };
 
 }
