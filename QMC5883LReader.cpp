@@ -116,8 +116,13 @@ void QMC5883LReader::run()
             continue;
         }
 
-        if (res & 0x01)
+        if ((res & 0x01) || (res & 0x04))
         {
+            if (res & 0x04)
+            {
+                _log->write(LogLevel::DEBUG, "qmc5883l overflow detected\n");
+            }
+
             int32_t x = 0;
             int32_t y = 0;
             int32_t z = 0;
