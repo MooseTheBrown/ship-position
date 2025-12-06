@@ -34,6 +34,10 @@ struct QMC5883LConfig
     int pollTimeout;
     // calibration polling timeout in milliseconds
     int calibrationPollTimeout;
+    // raw output file path
+    std::string rawOutput;
+    // maximum raw file size
+    int maxRawFileSize;
 };
 
 }

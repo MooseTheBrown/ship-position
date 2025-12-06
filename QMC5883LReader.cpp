@@ -29,6 +29,7 @@ extern "C"
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 namespace ship_position
 {
@@ -36,7 +37,8 @@ namespace ship_position
 QMC5883LReader::QMC5883LReader(const QMC5883LConfig &config) :
 _config(config),
 _fd(-1),
-_calibrating(false)
+_calibrating(false),
+_rawfd(-1)
 {
     _log = Log::getInstance();
     _calibration.xmin = 0;
@@ -47,6 +49,11 @@ _calibrating(false)
     _calibration.zmin = 0;
 
     init();
+
+    if (config.rawOutput != "")
+    {
+        setupRawOutput(config.rawOutput);
+    }
 }
 
 QMC5883LReader::~QMC5883LReader()
@@ -56,6 +63,11 @@ QMC5883LReader::~QMC5883LReader()
     if (_fd != -1)
     {
         close(_fd);
+    }
+
+    if (_rawfd != -1)
+    {
+        close(_rawfd);
     }
 }
 
@@ -139,6 +151,8 @@ void QMC5883LReader::run()
             {
                 _log->write(LogLevel::ERROR, "failed to read qmc5883l z axis\n");
             }
+
+            writeRawOutput(x, y, z);
 
             if (calibrating)
             {
@@ -234,6 +248,51 @@ void QMC5883LReader::stopCalibration()
     _log->write(LogLevel::DEBUG, "qmc5883L calibration stopped\n");
     _log->write(LogLevel::DEBUG, "qmc5883l calibration data: xmax=%d, xmin=%d, ymax=%d, ymin=%d, zmax=%d, zmin=%d\n",
         _calibration.xmax, _calibration.xmin, _calibration.ymax, _calibration.ymin, _calibration.zmax, _calibration.zmin);
+}
+
+void QMC5883LReader::setupRawOutput(const std::string &rawOutputPath)
+{
+    _rawfd = open(rawOutputPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0664);
+    if (_rawfd == -1)
+    {
+        _log->write(LogLevel::ERROR, "failed to open raw output file %s, error=%d\n", rawOutputPath.c_str(), errno);
+    }
+}
+
+void QMC5883LReader::writeRawOutput(int32_t x, int32_t y, int32_t z)
+{
+    if (_rawfd == -1)
+    {
+        return;
+    }
+
+    if (_config.maxRawFileSize != 0)
+    {
+        struct stat st;
+        if (fstat(_rawfd, &st) == -1)
+        {
+            _log->write(LogLevel::ERROR, "QMC5883LReader failed to stat raw output file, error=%d\n", errno);
+            return;
+        }
+        if (st.st_size > _config.maxRawFileSize)
+        {
+            _log->write(LogLevel::DEBUG, "QMC5883LReader: raw output file size exceeded, truncating\n");
+            if (ftruncate(_rawfd, 0) == -1)
+            {
+                _log->write(LogLevel::ERROR, "QMC5883LReader failed to truncate raw output file, error=%d\n", errno);
+                return;
+            }
+        }
+    }
+
+    std::string rawData = std::to_string(x) + "," +
+        std::to_string(y) + "," +
+        std::to_string(z) + "\n";
+
+    if (write(_rawfd, rawData.c_str(), rawData.length()) == -1)
+    {
+        _log->write(LogLevel::ERROR, "QMC5883LReader failed to write to raw output file, error=%d\n", errno);
+    }
 }
 
 }

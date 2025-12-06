@@ -56,6 +56,8 @@ public:
 protected:
     void init();
     int32_t readWord2C(uint8_t lowReg, uint8_t highReg, int32_t &res);
+    void setupRawOutput(const std::string &rawOutputPath);
+    void writeRawOutput(int32_t x, int32_t y, int32_t z);
 
     const QMC5883LConfig &_config;
     int _fd;
@@ -64,6 +66,7 @@ protected:
     std::shared_mutex _magnetometerDataMutex;
     bool _calibrating;
     QMC5883LCalibration _calibration;
+    int _rawfd;
 };
 
 }

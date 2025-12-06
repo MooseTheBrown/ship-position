@@ -91,6 +91,7 @@ void IPCClient::run()
 
 void IPCClient::stop()
 {
+    close(_fd);
     SingleThread::stop();
 }
 
